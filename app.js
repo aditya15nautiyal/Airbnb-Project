@@ -31,6 +31,22 @@ app.get("/listings", async (req, res) => {
     res.render("listings/index.ejs", { allListings });
 });
 
+
+//NEW - new and create route
+app.get("/listings/new", (req, res) => {
+    console.log("Creating a new listing");
+    res.render("listings/new.ejs");
+});
+//Create - creating a new listing
+app.post("/listings/new", async (req, res) => {
+    const newEntry = new Listing(req.body.listing);
+    await newEntry.save();
+    console.log("Successfully saved new entry!");
+    console.log(newEntry);
+    res.redirect("/listings");
+});
+
+
 //Show Route - show details of a particular listing
 app.get("/listings/:id", async (req, res) => {
     let { id } = req.params;
@@ -38,6 +54,8 @@ app.get("/listings/:id", async (req, res) => {
     console.log("Displaying listing with id: " + id);
     res.render("listings/show.ejs", { listing });
 });
+
+
 
 
 app.get("*", (req, res) => {
