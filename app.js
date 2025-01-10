@@ -3,8 +3,10 @@ const app = express();
 const mongoose = require('mongoose');
 const Listing = require('./models/listing');
 const path = require('path');
+const methodOverride = require('method-override');
 const port = 8080;
 
+app.use(methodOverride("_method"));
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 app.use(express.urlencoded({ extended: true }));
@@ -21,7 +23,7 @@ async function main() {
 }
 
 app.get("/", (req, res) => {
-    console.log("conncected to server - /");
+    console.log("connected to server - /");
     res.send("connected to server!");
 });
 
@@ -38,7 +40,7 @@ app.get("/listings/new", (req, res) => {
     res.render("listings/new.ejs");
 });
 //Create - creating a new listing
-app.post("/listings/new", async (req, res) => {
+app.post("/listings", async (req, res) => {
     const newEntry = new Listing(req.body.listing);
     await newEntry.save();
     console.log("Successfully saved new entry!");
@@ -55,6 +57,20 @@ app.get("/listings/:id", async (req, res) => {
     res.render("listings/show.ejs", { listing });
 });
 
+
+//Edit and update Route
+app.get("/listings/:id/edit", async (req, res) => {
+    let { id } = req.params;
+    const listing = await Listing.findById(id);
+    res.render("listings/edit.ejs", { listing });
+});
+
+app.put("/listings/:id", async (req, res) => {
+    let { id } = req.params;
+    await Listing.findByIdAndUpdate(id, {...req.body.listing});
+    console.log("Successfully updated the listing with id: " + id);
+    res.redirect(`/listings/${id}`);
+});
 
 
 
