@@ -73,6 +73,15 @@ app.put("/listings/:id", async (req, res) => {
 });
 
 
+//Delete Route
+app.delete("/listings/:id", async (req, res) => {
+    let {id} = req.params;
+    const listing = await Listing.findByIdAndDelete(id);
+    console.log(listing);
+    res.redirect("/listings");
+});
+
+
 
 app.get("*", (req, res) => {
     console.log("Wrong URL!");
