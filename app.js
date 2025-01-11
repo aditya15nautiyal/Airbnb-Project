@@ -27,7 +27,7 @@ async function main() {
 
 app.get("/", (req, res) => {
     console.log("connected to server - /");
-    res.send("connected to server!");
+    res.redirect("/listings");
 });
 
 // Index Route - show all the possible listings
@@ -71,7 +71,7 @@ app.get("/listings/:id/edit", async (req, res) => {
 
 app.put("/listings/:id", async (req, res) => {
     let { id } = req.params;
-    await Listing.findByIdAndUpdate(id, {...req.body.listing});
+    await Listing.findByIdAndUpdate(id, { ...req.body.listing });
     console.log("Successfully updated the listing with id: " + id);
     res.redirect(`/listings/${id}`);
 });
@@ -79,7 +79,7 @@ app.put("/listings/:id", async (req, res) => {
 
 //Delete Route
 app.delete("/listings/:id", async (req, res) => {
-    let {id} = req.params;
+    let { id } = req.params;
     const listing = await Listing.findByIdAndDelete(id);
     console.log(listing);
     res.redirect("/listings");
