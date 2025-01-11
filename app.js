@@ -33,6 +33,7 @@ app.get("/", (req, res) => {
 // Index Route - show all the possible listings
 app.get("/listings", async (req, res) => {
     const allListings = await Listing.find({});
+    console.log("Displaying all listings");
     res.render("listings/index.ejs", { allListings });
 });
 
