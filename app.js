@@ -6,7 +6,9 @@ const path = require('path');
 const methodOverride = require('method-override');
 const ejsMate = require("ejs-mate");
 const wrapAsync = require('./utils/wrapAsync.js');
-const ExpressError = require("./utils/ExpressError.js")
+const ExpressError = require("./utils/ExpressError.js");
+const { listingSchema } = require("./schema.js");
+
 const port = 8080;
 
 app.use(methodOverride("_method"));
@@ -32,6 +34,18 @@ app.get("/", (req, res) => {
     res.redirect("/listings");
 });
 
+
+const validateListing = (req, res, next) => {
+    let { error } = listingSchema.validate(req.body);
+    if (error) {
+        let errMsg = error.details.map((el) => el.message).join(",");
+        throw new ExpressError(400, errMsg);
+    } else {
+        next();
+    }
+}
+
+
 // Index Route - show all the possible listings
 app.get("/listings", wrapAsync(async (req, res) => {
     const allListings = await Listing.find({});
@@ -45,17 +59,19 @@ app.get("/listings/new", (req, res) => {
     console.log("Creating a new listing");
     res.render("listings/new.ejs");
 });
+
 //Create - creating a new listing
-app.post("/listings", wrapAsync(async (req, res) => {
-    if (!req.body.listing) {
-        throw new ExpressError(400, "Bad Request - Invalid Listing Data. Send valid data for listing.");
-    }
-    const newEntry = new Listing(req.body.listing);
-    await newEntry.save();
-    console.log("Successfully saved new entry!");
-    console.log(newEntry);
-    res.redirect("/listings");
-}));
+app.post(
+    "/listings",
+    validateListing,
+    wrapAsync(async (req, res) => {
+        const newEntry = new Listing(req.body.listing);
+        await newEntry.save();
+        console.log("Successfully saved new entry!");
+        console.log(newEntry);
+        res.redirect("/listings");
+    })
+);
 
 
 //Show Route - show details of a particular listing
@@ -74,15 +90,14 @@ app.get("/listings/:id/edit", wrapAsync(async (req, res) => {
     res.render("listings/edit.ejs", { listing });
 }));
 
-app.put("/listings/:id", wrapAsync(async (req, res) => {
-    if (!req.body.listing) {
-        throw new ExpressError(400, "Bad Request - Invalid Listing Data. Send valid data for listing.");
-    }
-    let { id } = req.params;
-    await Listing.findByIdAndUpdate(id, { ...req.body.listing });
-    console.log("Successfully updated the listing with id: " + id);
-    res.redirect(`/listings/${id}`);
-}));
+app.put("/listings/:id",
+    validateListing,
+    wrapAsync(async (req, res) => {
+        let { id } = req.params;
+        await Listing.findByIdAndUpdate(id, { ...req.body.listing });
+        console.log("Successfully updated the listing with id: " + id);
+        res.redirect(`/listings/${id}`);
+    }));
 
 
 //Delete Route
