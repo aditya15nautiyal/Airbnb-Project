@@ -5,10 +5,10 @@ const path = require('path');
 const methodOverride = require('method-override');
 const ejsMate = require("ejs-mate");
 const ExpressError = require("./utils/ExpressError.js");
-const Listing = require('./models/listing');
-const { listingSchema, reviewSchema } = require("./schema.js");
-const Review = require("./models/review.js");
-const wrapAsync = require('./utils/wrapAsync.js');
+
+
+const listings = require("./routes/listing.js");
+const reviews = require("./routes/review.js");
 
 const port = 8080;
 
@@ -35,112 +35,11 @@ app.get("/", (req, res) => {
     res.redirect("/listings");
 });
 
+//ADDING LISTING ROUTES
+app.use("/listings", listings);
 
-const validateListing = (req, res, next) => {
-    let { error } = listingSchema.validate(req.body);
-    if (error) {
-        let errMsg = error.details.map((el) => el.message).join(",");
-        throw new ExpressError(400, errMsg);
-    } else {
-        next();
-    }
-}
-
-const validateReview = (req, res, next) => {
-    let { error } = reviewSchema.validate(req.body);
-    if (error) {
-        let errMsg = error.details.map((el) => el.message).join(",");
-        throw new ExpressError(400, errMsg);
-    } else {
-        next();
-    }
-}
-
-
-// Index Route - show all the possible listings
-app.get("/listings", wrapAsync(async (req, res) => {
-    const allListings = await Listing.find({});
-    console.log("Displaying all listings");
-    res.render("listings/index.ejs", { allListings });
-}));
-
-
-//NEW - new and create route
-app.get("/listings/new", (req, res) => {
-    console.log("Creating a new listing");
-    res.render("listings/new.ejs");
-});
-
-//Create - creating a new listing
-app.post(
-    "/listings",
-    validateListing,
-    wrapAsync(async (req, res) => {
-        const newEntry = new Listing(req.body.listing);
-        await newEntry.save();
-        console.log("Successfully saved new entry!");
-        console.log(newEntry);
-        res.redirect("/listings");
-    })
-);
-
-
-//Show Route - show details of a particular listing
-app.get("/listings/:id", wrapAsync(async (req, res) => {
-    let { id } = req.params;
-    const listing = await Listing.findById(id).populate("reviews");
-    console.log("Displaying listing with id: " + id);
-    res.render("listings/show.ejs", { listing });
-}));
-
-
-//Edit and update Route
-app.get("/listings/:id/edit", wrapAsync(async (req, res) => {
-    let { id } = req.params;
-    const listing = await Listing.findById(id);
-    res.render("listings/edit.ejs", { listing });
-}));
-
-app.put("/listings/:id",
-    validateListing,
-    wrapAsync(async (req, res) => {
-        let { id } = req.params;
-        await Listing.findByIdAndUpdate(id, { ...req.body.listing });
-        console.log("Successfully updated the listing with id: " + id);
-        res.redirect(`/listings/${id}`);
-    }));
-
-
-//Delete Route
-app.delete("/listings/:id", wrapAsync(async (req, res) => {
-    let { id } = req.params;
-    const listing = await Listing.findByIdAndDelete(id);
-    console.log(listing);
-    res.redirect("/listings");
-}));
-
-
-// REVIEWS: /listings/:id/reviews
-app.post("/listings/:id/reviews", validateReview, wrapAsync(async (req, res) => {
-    let listing = await Listing.findById(req.params.id);
-    let newReview = new Review(req.body.review);
-    listing.reviews.push(newReview);
-    await newReview.save();
-    await listing.save();
-    console.log("new review added!");
-    res.redirect(`/listings/${listing._id}`);
-})
-);
-
-//REVIEW DELETE ROUTE
-app.delete("/listings/:id/reviews/:reviewId",
-    wrapAsync(async (req, res) => {
-        let { id, reviewId } = req.params;
-        await Listing.findByIdAndUpdate(id, { $pull: { reviews: { _id: reviewId } } });
-        await Review.findByIdAndDelete(reviewId);
-        res.redirect(`/listings/${id}`);
-    })
-);
+//ADDING REVIEW ROUTES
+app.use("/listings/:id/reviews", reviews);
 
 
 app.all("*", (req, res, next) => {
