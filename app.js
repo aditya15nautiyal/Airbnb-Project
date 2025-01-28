@@ -5,6 +5,8 @@ const path = require('path');
 const methodOverride = require('method-override');
 const ejsMate = require("ejs-mate");
 const ExpressError = require("./utils/ExpressError.js");
+const session = require("express-session");
+const flash = require("connect-flash");
 
 
 const listings = require("./routes/listing.js");
@@ -30,10 +32,31 @@ async function main() {
     await mongoose.connect("mongodb://localhost:27017/wanderlust");
 }
 
+const sessionOptions = {
+    secret: "airbnb123!@#$%^&*&^%",
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+        expires: Date.now() + 1000 * 3600 * 24 * 7,
+        maxAge: 1000 * 3600 * 24 * 7,
+        httpOnly: true,
+    }
+};
+
 app.get("/", (req, res) => {
     console.log("connected to server - /");
     res.redirect("/listings");
 });
+
+app.use(session(sessionOptions));
+app.use(flash());
+
+app.use((req, res, next) => {
+    res.locals.success = req.flash("success");
+    res.locals.error = req.flash("error");
+    next();
+});
+
 
 //ADDING LISTING ROUTES
 app.use("/listings", listings);
