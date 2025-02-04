@@ -39,6 +39,9 @@ router.post(
     validateListing,
     wrapAsync(async (req, res) => {
         const newEntry = new Listing(req.body.listing);
+        // passport stores the user details in req.user
+        // so we can use req.user._id to get the user details
+        newEntry.owner = req.user._id;
         await newEntry.save();
         console.log("Successfully saved new entry!");
         console.log(newEntry);
@@ -50,7 +53,9 @@ router.post(
 //Show Route - show details of a particular listing
 router.get("/:id", wrapAsync(async (req, res) => {
     let { id } = req.params;
-    const listing = await Listing.findById(id).populate("reviews");
+    // using populate(reviews) to insert all reviews in the listing instead of their ids
+    //using populate(owner) to insert the owner details also
+    const listing = await Listing.findById(id).populate("reviews").populate("owner");
     if (!listing) {
         req.flash("error", "Cannot find that listing!");
         res.redirect("/listings");
