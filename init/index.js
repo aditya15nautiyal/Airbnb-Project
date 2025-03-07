@@ -19,6 +19,7 @@ async function main() {
 const initDB = async () => {
     await Listing.deleteMany({});
     //adding an owner to all data
+    // Test Data: username: admin, password: password !!!!!!!!
     initData.data.forEach((listingObj) => {
         listingObj.owner = "67a21d5ed8ba68b3cd338ee3";
     });
