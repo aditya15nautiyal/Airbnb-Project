@@ -43,7 +43,9 @@ router.get("/:id", wrapAsync(async (req, res) => {
     let { id } = req.params;
     // using populate(reviews) to insert all reviews in the listing instead of their ids
     //using populate(owner) to insert the owner details also
-    const listing = await Listing.findById(id).populate("reviews").populate("owner");
+    const listing = await Listing.findById(id)
+        .populate({path: "reviews", populate: {path: "author"}})
+        .populate("owner");
     if (!listing) {
         req.flash("error", "Cannot find that listing!");
         res.redirect("/listings");
