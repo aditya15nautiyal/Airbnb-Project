@@ -15,10 +15,14 @@ module.exports.renderNewForm = (req, res) => {
 
 
 module.exports.createListing = async (req, res) => {
+    let url = req.file.path;
+    let filename = req.file.filename;
+    // multer parses the form's file data and stores it in req.file
     const newEntry = new Listing(req.body.listing);
     // passport stores the user details in req.user
     // so we can use req.user._id to get the user details
     newEntry.owner = req.user._id;
+    newEntry.image = { url, filename };
     await newEntry.save();
     console.log("Successfully saved new entry!");
     console.log(newEntry);

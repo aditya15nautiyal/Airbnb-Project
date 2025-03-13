@@ -1,3 +1,7 @@
+if (process.env.NODE_ENV !== "production") {
+    require("dotenv").config();
+}
+
 const mongoose = require('mongoose');
 const express = require('express');
 const app = express();
@@ -64,7 +68,7 @@ passport.deserializeUser(User.deserializeUser());
 app.use((req, res, next) => {
     res.locals.success = req.flash("success");
     res.locals.error = req.flash("error");
-    res.locals.currUser =req.user;
+    res.locals.currUser = req.user;
     next();
 });
 
