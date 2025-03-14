@@ -54,7 +54,14 @@ module.exports.renderEditForm = async (req, res) => {
         req.flash("error", "Cannot find that listing!");
         res.redirect("/listings");
     }
-    res.render("listings/edit.ejs", { listing });
+
+    // this if for changing the size of the image in the edit form:
+    // we modify the url in accordance to cloudinary api, which transforms the 
+    // image to the desired size
+    let originalImageUrl = listing.image.url;
+    originalImageUrl = originalImageUrl.replace("/upload", "/upload/w_250");
+
+    res.render("listings/edit.ejs", { listing, originalImageUrl });
 };
 
 
