@@ -1,4 +1,7 @@
 <% layout("/layouts/boilerplate") -%>
+<script>
+    const mapToken = "<%=process.env.MAP_TOKEN%>";
+</script>
 <div class="row">
     <div class="col-8 offset-3">
         <h3><%=listing.title%></h3>
@@ -37,8 +40,8 @@
     <% }%>
 
     <div class="col-8 offset-3 mb-3">
-        <hr>
         <%if (currUser){%>
+        <hr />
         <h4>
             Leave a review
         </h4>
@@ -75,25 +78,32 @@
         <hr>
         <%}%>
 
-
-        <p><b>All Reviews</b></p>
+        <%if(listing.reviews.length > 0){%>
         <div class="row">
+            <p><b>All Reviews</b></p>
+            <%for(review of listing.reviews){%>
 
-        <%for(review of listing.reviews){%>
-
-        <div class="card col-5 ms-3 mb-3">
-            <div class="card-body">
-                <h5 class="card-title">@<%=review.author.username%></h5>
-                <p class="starability-result card-text" data-rating=<%=review.rating%>></p>
-                <p class="card-text"><%=review.comment %></p>
-                <form class="mb-3" method="post"
-                    action="/listings/<%=listing._id%>/reviews/<%=review._id%>?_method=DELETE">
-                    <button class="btn btn-sm btn-dark">Delete</button>
-                </form>
+            <div class="card col-5 ms-3 mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">@<%=review.author.username%></h5>
+                    <p class="starability-result card-text" data-rating=<%=review.rating%>></p>
+                    <p class="card-text"><%=review.comment %></p>
+                    <form class="mb-3" method="post"
+                        action="/listings/<%=listing._id%>/reviews/<%=review._id%>?_method=DELETE">
+                        <button class="btn btn-sm btn-dark">Delete</button>
+                    </form>
+                </div>
             </div>
-        </div>
 
-        <%}%>
+            <%}%>
+            <%}%>
+        </div>
 
     </div>
 </div>
+<div class="col-6 offset-3 mb-3">
+    <h3>Where you'll be</h3>
+    <div id="map"></div>
+</div>
+
+<script src="/js/map.js"></script>
